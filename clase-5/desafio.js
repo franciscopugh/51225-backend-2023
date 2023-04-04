@@ -1,22 +1,29 @@
+import { promises as fs } from 'fs'
+
 class ProductManager {
-    constructor() {
+    constructor(path) {
+        this.path = path
         this.products = []
     }
 
-    addProduct(product) {
+    async addProduct(product) {
         if (this.products.find(producto => producto.code == product.code)) {
             return "Producto existente"
         } else {
+            //Consultar el array del txt
             this.products.push(product)
+            //Guardar en el txt
             //Producto con este code no existe
         }
     }
 
-    getProducts() {
-        return this.products
+    async getProducts() {
+        const products = await fs.readFile(this.path, 'utf-8')
+        const prods = JSON.parse(products)
+        console.log(prods)
     }
 
-    getProductById(id) {
+    async getProductById(id) {
         const product = this.products.find(producto => producto.id == id)
 
         if (product) { //Objeto o undefined
@@ -24,6 +31,14 @@ class ProductManager {
         }
 
         return "Not Found"
+    }
+
+    async updateProduct() {
+
+    }
+
+    async deleteProduct() {
+
     }
 
 
@@ -56,10 +71,11 @@ const product3 = new Product("Azucar", "Azucar", 320, "", "A456", 30)
 const product4 = new Product("Te", "Te", 120, "", "T123", 40)
 const product5 = new Product()
 
-const productManager = new ProductManager()
-productManager.addProduct(product1)
+const productManager = new ProductManager('./info.txt')
+/*productManager.addProduct(product1)
 productManager.addProduct(product2)
 console.log(productManager.addProduct(product1))
 console.log(productManager.getProductById(2))
 console.log(productManager.getProductById(5))
-console.log(productManager.getProducts())
+*/
+await productManager.getProducts()
