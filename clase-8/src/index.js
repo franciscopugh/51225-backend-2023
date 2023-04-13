@@ -1,4 +1,5 @@
 import express from 'express'
+import { ProductManager } from './ProductManager.js'
 
 //Configuracion de express
 const app = express()
@@ -6,63 +7,37 @@ const PORT = 4000
 app.use(express.json()) //Permite ejecutar JSON en mi app
 app.use(express.urlencoded({ extended: true })) //Permite poder realizar consultas en la URL (req.query)
 
+const productManager = new ProductManager('./productos.txt')
 
-const users = [
-    {
-        nombre: "Francisco",
-        apellido: "Pugh",
-        id: 1,
-        cargo: "Profesor"
-    },
-    {
-        nombre: "Alex",
-        apellido: "Terrussi",
-        id: 2,
-        cargo: "Tutor"
-    },
-    {
-        nombre: "Daniel",
-        apellido: "Perco",
-        id: 3,
-        cargo: "Tutor"
-    }
-]
-
-app.get("/user", (req, res) => {
-    res.send(users)
+app.get("/product", async (req, res) => {
+    const products = await productManager.getProducts()
+    res.send(products)
 })
 
-app.get("/user/:idUser", (req, res) => {
-    const user = users.find(user => user.id === parseInt(req.params.idUser))
-    res.send(user)
+app.get("/product/:id", async (req, res) => {
+    const product = await productManager.getProductById(req.params.id)
+    res.send(product)
 })
 
-app.post("/user", (req, res) => {
-    const { nombre, apellido, id, cargo } = req.body //Consulto los datos enviados por postman
-    users.push({ nombre: nombre, apellido: apellido, id: id, cargo: cargo }) //Creo y guardo un nuevo objeto
-    res.send("Usuario creado")
+app.post("/product", async (req, res) => {
+    const { title, description, price, thumbnail, code, stock } = req.body
+    await productManager.addProduct({ title, description, price, thumbnail, code, stock })
+    res.send("Producto creado")
 })
 
-app.put("/user/:idUser", (req, res) => {
-    const idUser = parseInt(req.params.idUser)
-    const { nombre, apellido, cargo } = req.body //Consulto los datos enviados por postman
+app.put("/product/:id", async (req, res) => {
+    const id = req.params.id
+    const { title, description, price, thumbnail, code, stock } = req.body
 
-    let indice = users.findIndex(user => user.id === idUser)
-    console.log(indice)
-    if (indice != -1) {
-        users[indice].nombre = nombre
-        users[indice].apellido = apellido
-        users[indice].cargo = cargo
-        res.send("Usuario actualizado") //Return implicitado
-    }
+    const mensaje = await productManager.updateProduct(id, { title, description, price, thumbnail, code, stock })
 
-    res.send("Usuario no encontrado")
+    res.send(mensaje)
 })
 
-app.delete("/user/:idUser", (req, res) => {
-    const indice = users.findIndex(user => user.id === parseInt(req.params.idUser))
-    users.splice(indice, 1)
-    res.send("Usuario eliminado")
+app.delete("/product/:id", async (req, res) => {
+    const id = req.params.id
+    const mensaje = await productManager.deleteProduct(id)
+    res.send(mensaje)
 })
 
 app.listen(PORT, () => {
