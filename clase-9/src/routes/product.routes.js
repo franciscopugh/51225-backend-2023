@@ -6,8 +6,13 @@ const productManager = new ProductManager('./productos.txt')
 const productRouter = Router() //productRouter voy a definir mis rutas
 
 productRouter.get("/", async (req, res) => {
-    const products = await productManager.getProducts()
-    res.send(products)
+    try {
+        const products = await productManager.getProducts()
+        res.send(products)
+    } catch (error) {
+        res.send(error)
+    }
+
 })
 
 productRouter.get("/:id", async (req, res) => {
