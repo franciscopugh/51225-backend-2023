@@ -4,8 +4,11 @@ import session from 'express-session'
 import cookieParser from 'cookie-parser'
 import MongoStore from 'connect-mongo'
 import routerSession from './routes/session.js'
+import userRouter from './routes/users.js'
 import passport from 'passport'
+import initializePassport from './config/passport.js'
 import { engine } from 'express-handlebars'
+import mongoose from 'mongoose'
 
 const app = express()
 
@@ -23,6 +26,15 @@ app.use(session({
     saveUninitialized: true
 }))
 
+await mongoose.connect(process.env.MONGODB_URL).then(() => console.log("MongoDB conectado"))
+
+//Config passport
+initializePassport()
+app.use(passport.initialize())
+app.use(passport.session())
+
 app.use('/session', routerSession)
+app.use('/user', userRouter)
+
 
 app.listen(4000, () => console.log("Server on port 4000"))
